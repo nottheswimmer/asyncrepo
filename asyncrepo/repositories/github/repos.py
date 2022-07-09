@@ -1,11 +1,13 @@
+import asyncio
 from typing import Optional
 
-from github import Github, UnknownObjectException
+from github import UnknownObjectException
 from github.PaginatedList import PaginatedList
 from github.Repository import Repository as GithubRepository
 
 from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.repository import Repository, Page, Item
+from asyncrepo.utils.github_client import GithubClient
 
 
 class Repos(Repository):
@@ -20,25 +22,37 @@ class Repos(Repository):
         """
         super().__init__()
         # TODO: Non-blocking GitHub Client
-        self._client = Github(login_or_token, **github_kwargs)
+        self._client = GithubClient(login_or_token, **github_kwargs)
 
         if user and org:
             raise ValueError('Cannot specify both user and org')
 
-        self._user = self._org = None
+        self._user_or_org = self._user = self._user_login = self._org = self._org_name = None
         self._list_kwargs = {}
         if user:
-            self._user = self._user_or_org = self._client.get_user(user)
+            self._user_login = user
         elif org:
-            self._org = self._user_or_org = self._client.get_organization(org)
-        else:
-            self._user = self._user_or_org = self._client.get_user()
+            self._org_name = org
             self._list_kwargs['affiliation'] = 'owner'
+
+        self._ensure_user_or_org_lock = asyncio.Lock()
+
+    async def _ensure_user_or_org(self) -> None:
+        async with self._ensure_user_or_org_lock:
+            if self._user_or_org is None:
+                if self._user_login is not None:
+                    self._user_or_org = self._user = await self._client.get_user(self._user_login)
+                elif self._org_name is not None:
+                    self._user_or_org = self._org = await self._client.get_organization(self._org_name)
+                else:
+                    # Default to the authenticated user
+                    self._user_or_org = self._user = await self._client.get_user()
 
     async def list_page(self, *args, **kwargs) -> Page:
         """
         List the asyncrepo for the user or organization.
         """
+        await self._ensure_user_or_org()
         paginated_list = self._user_or_org.get_repos(*args, **kwargs, **self._list_kwargs)
         return await self._page_from_paginated_list(paginated_list)
 
@@ -47,11 +61,12 @@ class Repos(Repository):
         Get the repository with the specified identifier. This will return any repository the client has access to,
         regardless of whether it's associated with the user or organization.
         """
+        await self._ensure_user_or_org()
         try:
-            repo = self._client.get_repo(identifier)
+            repo = await self._client.get_repo(identifier)
         except UnknownObjectException:
             raise ItemNotFoundError(identifier)
-        return self._item_from_github_repo(repo)
+        return await self._item_from_github_repo(repo)
 
     async def search_page(self, query: str, *args, **kwargs) -> 'Page':
         """
@@ -59,6 +74,7 @@ class Repos(Repository):
         There is no guarantee that a specially constructed query could not cause this to
         return results for asyncrepo not associated with the user or organization.
         """
+        await self._ensure_user_or_org()
         qualifiers = {}
         if self._user is not None:
             qualifiers['user'] = self._user.login
@@ -69,15 +85,15 @@ class Repos(Repository):
 
     async def _page_from_paginated_list(self, paginated_list: PaginatedList, page=0, seen=0) -> Page:
         next_page = None
-        items = [self._item_from_github_repo(repo) for repo in paginated_list.get_page(page)]
+        items = await asyncio.gather(*[self._item_from_github_repo(repo) for repo in await paginated_list.get_page_async(page)])
         seen += len(items)
-        if seen < paginated_list.totalCount:
+        if seen < await paginated_list.total_count_async():
             async def next_page() -> 'Page':
                 return await self._page_from_paginated_list(paginated_list, page=page + 1, seen=seen)
         return Page(self, items, next_page)
 
-    def _item_from_github_repo(self, repo: GithubRepository) -> Item:
-        return Item(self, repo.full_name, repo.raw_data)
+    async def _item_from_github_repo(self, repo: GithubRepository) -> Item:
+        return Item(self, repo.full_name, await repo.raw_data_async())
 
     def _item_from_raw(self, raw: dict) -> Item:
         return Item(self, raw['full_name'], raw)

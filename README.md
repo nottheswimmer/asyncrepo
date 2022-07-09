@@ -31,8 +31,9 @@ To provide tooling for developers of unified and federated search platforms.
 †: On the roadmap of things to be addressed.
 
 - `github.repos.Repos`
-  - † Does not handle rate limiting, so iteration may have an unrecoverable error.
-  - † Uses PyGithub, which is not async.
+  - † May need additional work to mitigate rate limiting issues.
+  - ~~† Uses PyGithub, which is not async.~~
+  - † Patches PyGithub to support async (should consider using a different library like Gidgethub).
   - † The `get` operation can retrieve repositories which are out of scope for the user/organization.
 - `greenhouse.jobs.Jobs`
   - Uses [naive search](#naive-search).
@@ -66,7 +67,7 @@ The following is a list of things that might be worked on next.
 - Add common optional attributes to all items. Things like `title`, `description`, `url`, `created_at`, etc.
 - Add a meta repository that can combine multiple repositories.
 
-### Repositories
+### Potential Repositories
 - [ ] `jira.projects.Projects`
 - [ ] `jira.issues.Issues`
 - [ ] `confluence.pages.Pages`
@@ -80,3 +81,9 @@ The following is a list of things that might be worked on next.
 - [ ] `slack.users.Users`
 - [ ] `slack.messages.Messages`
 - [ ] `pypi.packages.Packages`
+- [ ] `google.drive.Files`
+- [ ] `google.mail.Mail`
+- [ ] `google.calendar.Events`
+- [ ] `aws.s3.Objects`
+- [ ] `aws.s3.Buckets`
+- [ ] `github.code.Code`
