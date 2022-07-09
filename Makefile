@@ -29,4 +29,5 @@ devinstall:
 
 .PHONY: test
 test:
-	py -m pytest
+	py -m pytest -n auto
+

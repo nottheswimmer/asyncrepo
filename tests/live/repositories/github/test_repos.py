@@ -1,86 +1,94 @@
 import asyncio
 import time
 from os import environ
-from unittest import IsolatedAsyncioTestCase
 
+import pytest
 from dotenv import load_dotenv
 
 from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.repositories.github.repos import Repos
 from asyncrepo.repository import Item, Page, Repository
+from tests.utils import async_test
 
 load_dotenv()
 
+user = "nottheswimmer"
+known_repositories = ["nottheswimmer/pytago",
+                      "nottheswimmer/asyncrepo",
+                      "nottheswimmer/excalimaid",
+                      "nottheswimmer/i_love_hello_world",
+                      "nottheswimmer/podcastsync",
+                      "nottheswimmer/arbitrary-dateparser"]
 
-class TestRepos(IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        self.user = "nottheswimmer"
-        self.known_repositories = ["nottheswimmer/pytago",
-                                   "nottheswimmer/asyncrepo",
-                                   "nottheswimmer/excalimaid",
-                                   "nottheswimmer/i_love_hello_world",
-                                   "nottheswimmer/podcastsync",
-                                   "nottheswimmer/arbitrary-dateparser"]
-        self.repository = self.get_repository()
 
-    def get_repository(self) -> Repository:
-        return Repos(environ['GITHUB_TOKEN'], user=self.user)
+def get_repository():
+    return Repos(environ['GITHUB_TOKEN'], user=user)
 
-    def test_repository(self):
-        self.assertIsInstance(self.repository, Repository)
 
-    async def test_list(self):
-        total_pages = total_items = 0
-        identifiers = set()
-        async for page in self.repository.list_pages():
-            total_pages += 1
-            self.assertIsInstance(page, Page)
-            for item in page.items:
-                self.assertIsInstance(item, Item)
-                total_items += 1
-                self.assertNotIn(item.identifier, identifiers)
-                self.assertEqual(self.user, item.raw['owner']['login'])
-                identifiers.add(item.identifier)
-        self.assertGreater(total_pages, 0)
-        self.assertGreater(total_items, 0)
-        for known_repository in self.known_repositories:
-            self.assertIn(known_repository, identifiers)
+def test_repository():
+    assert isinstance(get_repository(), Repository)
 
-    async def test_get_when_identifier_exists(self):
-        item = await self.repository.get(self.known_repositories[0])
-        self.assertIsInstance(item, Item)
-        self.assertEqual(item.identifier, self.known_repositories[0])
 
-    async def test_get_when_identifier_does_not_exist(self):
-        with self.assertRaises(ItemNotFoundError):
-            await self.repository.get(f'{self.user}/non-existent')
+@async_test
+async def test_list():
+    total_pages = total_items = 0
+    identifiers = set()
+    async for page in get_repository().list_pages():
+        total_pages += 1
+        assert isinstance(page, Page)
+        for item in page.items:
+            assert isinstance(item, Item)
+            total_items += 1
+            assert item.identifier not in identifiers
+            assert user == item.raw['owner']['login']
+            identifiers.add(item.identifier)
+    assert total_pages > 0
+    assert total_items > 0
+    for known_repository in known_repositories:
+        assert known_repository in identifiers
 
-    async def test_get_async_is_faster(self):
-        """
-        TODO: Replace this test with something less fragile. It's important to have something
-          like this that can be used to test concurrency, but there are better ways to do this
-          than assuming the concurrent approach will always be faster.
-        """
-        n_repos = len(self.known_repositories)
 
-        # First, we'll get n_repos using asyncio.gather() and time that.
-        start_async = time.time()
-        gh_repos = await asyncio.gather(*[self.repository.get(repo) for repo in self.known_repositories])
-        elapsed_async = time.time() - start_async
-        average_async = elapsed_async / n_repos
+@async_test
+async def test_get_when_identifier_exists():
+    item = await get_repository().get(known_repositories[0])
+    assert isinstance(item, Item)
+    assert item.identifier == known_repositories[0]
 
-        # Then, we'll get n_repos sequentially and time that. Use a new repository to avoid caching.
-        repository = self.get_repository()
-        start_sync = time.time()
-        gh_repos_2 = []
-        for known_repository in self.known_repositories:
-            gh_repos_2.append(await repository.get(known_repository))
-        elapsed_sync = time.time() - start_sync
-        average_sync = elapsed_sync / n_repos
 
-        # Sanity check / something to look at during debugging.
-        self.assertEqual(len(gh_repos), len(gh_repos_2))
+@async_test
+async def test_get_when_identifier_does_not_exist():
+    with pytest.raises(ItemNotFoundError):
+        await get_repository().get(f'{user}/non-existent')
 
-        # Finally, we'll check that the asyncio.gather() is at least faster than the sequential version.
-        n_times_faster = average_sync / average_async
-        self.assertGreater(n_times_faster, 1)
+
+@async_test
+async def test_get_async_is_faster():
+    """
+    TODO: Replace this test with something less fragile. It's important to have something
+      like this that can be used to test concurrency, but there are better ways to do this
+      than assuming the concurrent approach will always be faster.
+    """
+    n_repos = len(known_repositories)
+
+    # First, we'll get n_repos using asyncio.gather() and time that.
+    start_async = time.time()
+    repository = get_repository()
+    gh_repos = await asyncio.gather(*[repository.get(repo) for repo in known_repositories])
+    elapsed_async = time.time() - start_async
+    average_async = elapsed_async / n_repos
+
+    # Then, we'll get n_repos sequentially and time that. Use a new repository to avoid caching.
+    repository = get_repository()
+    start_sync = time.time()
+    gh_repos_2 = []
+    for known_repository in known_repositories:
+        gh_repos_2.append(await repository.get(known_repository))
+    elapsed_sync = time.time() - start_sync
+    average_sync = elapsed_sync / n_repos
+
+    # Sanity check / something to look at during debugging.
+    assert len(gh_repos) == len(gh_repos_2)
+
+    # Finally, we'll check that the asyncio.gather() is at least faster than the sequential version.
+    n_times_faster = average_sync / average_async
+    assert n_times_faster > 1
