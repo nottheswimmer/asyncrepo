@@ -9,8 +9,8 @@
 ## Usage
 
 For now, just check out the live tests for some examples:
-- [Greenhouse Jobs Test](tests/live/greenhouse/test_jobs.py)
-- [GitHub Repo Test](tests/live/github/test_repo.py)
+- [Greenhouse Jobs Test](tests/live/repositories/greenhouse/test_jobs.py)
+- [GitHub Repos Test](tests/live/repositories/github/test_repos.py)
 
 ## Motivation
 
