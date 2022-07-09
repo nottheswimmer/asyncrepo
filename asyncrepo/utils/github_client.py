@@ -93,9 +93,8 @@ async def _async_github_request(sync_method, *args, **kwargs):
         r = sync_method(*args, **kwargs)
     except IOBoundRequestError as e:
         http_args, http_kwargs = e.args, e.kwargs
-        async with HttpClient() as session:
+        async with HttpClient(add_ssl_context=e.session.add_ssl_context) as session:
             http_kwargs.pop('verify', None)
-            print("S:", http_args, http_kwargs)
             async with session.request(*http_args, **http_kwargs) as response:
                 setattr(response, "status_code", response.status)
                 setattr(response, "text", await response.text())
@@ -105,20 +104,19 @@ async def _async_github_request(sync_method, *args, **kwargs):
                         r = sync_method(*args, **kwargs)
                     finally:
                         e.session.async_response = None
-            print("E:", http_args, http_kwargs)
     return r
 
 
 class FakeHTTPSRequestsConnectionClass(HTTPSRequestsConnectionClass):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.session = FakeSession()
+        self.session = FakeSession(True)
 
 
 class FakeHTTPRequestsConnectionClass(HTTPRequestsConnectionClass):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.session = FakeSession()
+        self.session = FakeSession(False)
 
 
 class IOBoundRequestError(Exception):
@@ -129,10 +127,11 @@ class IOBoundRequestError(Exception):
 
 
 class FakeSession(Session):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, add_ssl_context: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.async_response = None
         self.async_response_lock = threading.Lock()
+        self.add_ssl_context = add_ssl_context
 
     def request(self, *args, **kwargs):
         if self.async_response:

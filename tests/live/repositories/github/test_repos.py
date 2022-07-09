@@ -26,7 +26,7 @@ class TestRepos(IsolatedAsyncioTestCase):
     def get_repository(self) -> Repository:
         return Repos(environ['GITHUB_TOKEN'], user=self.user)
 
-    async def test_repository(self):
+    def test_repository(self):
         self.assertIsInstance(self.repository, Repository)
 
     async def test_list(self):
