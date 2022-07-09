@@ -1,0 +1,19 @@
+# Python
+*.pyc
+__pycache__
+
+# Python Virtual Environment
+venv
+
+# pytest
+.pytest_cache
+
+# PyCharm
+.idea
+
+# Local development environment
+.env
+
+# Build output
+dist
+*.egg-info
