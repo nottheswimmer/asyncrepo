@@ -8,12 +8,12 @@ from dotenv import load_dotenv
 from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.repositories.github.repos import Repos
 from asyncrepo.repository import Item, Page, Repository
-from tests.utils import async_test
 
 load_dotenv()
 
-user = "nottheswimmer"
-known_repositories = ["nottheswimmer/pytago",
+GITHUB_TOKEN = environ['GITHUB_TOKEN']
+GITHUB_USER = "nottheswimmer"
+KNOWN_REPOSITORIES = ["nottheswimmer/pytago",
                       "nottheswimmer/asyncrepo",
                       "nottheswimmer/excalimaid",
                       "nottheswimmer/i_love_hello_world",
@@ -22,14 +22,14 @@ known_repositories = ["nottheswimmer/pytago",
 
 
 def get_repository():
-    return Repos(environ['GITHUB_TOKEN'], user=user)
+    return Repos(GITHUB_TOKEN, user=GITHUB_USER)
 
 
 def test_repository():
     assert isinstance(get_repository(), Repository)
 
 
-@async_test
+@pytest.mark.asyncio
 async def test_list():
     total_pages = total_items = 0
     identifiers = set()
@@ -40,40 +40,40 @@ async def test_list():
             assert isinstance(item, Item)
             total_items += 1
             assert item.identifier not in identifiers
-            assert user == item.raw['owner']['login']
+            assert GITHUB_USER == item.raw['owner']['login']
             identifiers.add(item.identifier)
     assert total_pages > 0
     assert total_items > 0
-    for known_repository in known_repositories:
+    for known_repository in KNOWN_REPOSITORIES:
         assert known_repository in identifiers
 
 
-@async_test
+@pytest.mark.asyncio
 async def test_get_when_identifier_exists():
-    item = await get_repository().get(known_repositories[0])
+    item = await get_repository().get(KNOWN_REPOSITORIES[0])
     assert isinstance(item, Item)
-    assert item.identifier == known_repositories[0]
+    assert item.identifier == KNOWN_REPOSITORIES[0]
 
 
-@async_test
+@pytest.mark.asyncio
 async def test_get_when_identifier_does_not_exist():
     with pytest.raises(ItemNotFoundError):
-        await get_repository().get(f'{user}/non-existent')
+        await get_repository().get(f'{GITHUB_USER}/non-existent')
 
 
-@async_test
+@pytest.mark.asyncio
 async def test_get_async_is_faster():
     """
     TODO: Replace this test with something less fragile. It's important to have something
       like this that can be used to test concurrency, but there are better ways to do this
       than assuming the concurrent approach will always be faster.
     """
-    n_repos = len(known_repositories)
+    n_repos = len(KNOWN_REPOSITORIES)
 
     # First, we'll get n_repos using asyncio.gather() and time that.
     start_async = time.time()
     repository = get_repository()
-    gh_repos = await asyncio.gather(*[repository.get(repo) for repo in known_repositories])
+    gh_repos = await asyncio.gather(*[repository.get(repo) for repo in KNOWN_REPOSITORIES])
     elapsed_async = time.time() - start_async
     average_async = elapsed_async / n_repos
 
@@ -81,7 +81,7 @@ async def test_get_async_is_faster():
     repository = get_repository()
     start_sync = time.time()
     gh_repos_2 = []
-    for known_repository in known_repositories:
+    for known_repository in KNOWN_REPOSITORIES:
         gh_repos_2.append(await repository.get(known_repository))
     elapsed_sync = time.time() - start_sync
     average_sync = elapsed_sync / n_repos
