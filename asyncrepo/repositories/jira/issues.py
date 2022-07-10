@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 from asyncrepo.repository import Repository, Page, Item
 from asyncrepo.utils.jira_client import JiraClient

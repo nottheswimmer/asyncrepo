@@ -1,5 +1,4 @@
 import warnings
-from typing import Optional
 
 from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.utils.http_client import BasicAuthHttpClient
