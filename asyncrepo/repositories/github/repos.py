@@ -13,7 +13,7 @@ from asyncrepo.utils.github_client import GithubClient
 class Repos(Repository):
     """
     Repos for a specified user or organization from the GitHub API. If no user or organization is specified,
-    the authenticated user's asyncrepo will be returned.
+    the authenticated user's repos will be returned.
     """
 
     def __init__(self, login_or_token: str, /, user: Optional[str] = None, org: Optional[str] = None,
@@ -50,7 +50,7 @@ class Repos(Repository):
 
     async def list_page(self, *args, **kwargs) -> Page:
         """
-        List the asyncrepo for the user or organization.
+        List the repo for the user or organization.
         """
         await self._ensure_user_or_org()
         paginated_list = self._user_or_org.get_repos(*args, **kwargs, **self._list_kwargs)
@@ -70,9 +70,9 @@ class Repos(Repository):
 
     async def search_page(self, query: str, *args, **kwargs) -> 'Page':
         """
-        Search for asyncrepo matching the specified query for the user or organization.
+        Search for a repo matching the specified query for the user or organization.
         There is no guarantee that a specially constructed query could not cause this to
-        return results for asyncrepo not associated with the user or organization.
+        return results for a repo not associated with the user or organization.
         """
         await self._ensure_user_or_org()
         qualifiers = {}
