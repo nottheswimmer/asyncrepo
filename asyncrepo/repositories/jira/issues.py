@@ -5,8 +5,7 @@ from asyncrepo.utils.jira_client import JiraClient
 
 
 class Issues(Repository):
-    def __init__(self, base_url: str, username: str, password: str, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, base_url: str, username: str, password: str):
         self.jira_client = None
         self._base_url = base_url
         self._username = username

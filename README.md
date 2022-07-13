@@ -11,6 +11,7 @@
 For now, just check out the live tests for some examples:
 
 - [Confluence Pages Test](tests/live/repositories/confluence/test_pages.py)
+- [File CSV Rows Test](tests/live/repositories/file/test_csv_rows.py)
 - [GitHub Repos Test](tests/live/repositories/github/test_repos.py)
 - [Greenhouse Jobs Test](tests/live/repositories/greenhouse/test_jobs.py)
 - [Jira Issues Test](tests/live/repositories/jira/test_issues.py)
@@ -22,6 +23,7 @@ To provide tooling for developers of unified and federated search platforms.
 ## Currently supported repositories
 
 - `confluence.pages.Pages` - Confluence pages belonging to a given organization
+- `file.csv.Rows` - CSV rows within a given file specified by filepath or URL
 - `github.repos.Repos` - GitHub repositories belonging to a given user or organization.
 - `greenhouse.jobs.Jobs` - Greenhouse jobs belonging to a given board.
 - `jira.issues.Issues` - JIRA issues belonging to a given organization.
@@ -36,12 +38,13 @@ To provide tooling for developers of unified and federated search platforms.
 
 ## Support by repository
 
-|       Repository       | .get | .list |        .search         | Non-blocking IO |
-|:----------------------:|:----:|:-----:|:----------------------:|-----------------|
-| confluence.pages.Pages | Yes  |  Yes  |          Yes           | Yes             |
-|   github.repos.Repos   | Yes  |  Yes  |          Yes           | Yes             |
-|  greenhouse.jobs.Jobs  | Yes  |  Yes  | [Naive](#naive-search) | Yes             |
-|   jira.issues.Issues   | Yes  |  Yes  |          Yes           | Yes             |
+|       Repository       |        .get         | .list |        .search         | Non-blocking IO | Authentication |
+|:----------------------:|:-------------------:|:-----:|:----------------------:|-----------------|----------------|
+| confluence.pages.Pages |         Yes         |  Yes  |          Yes           | Yes             | Basic          |
+|     file.csv.Rows      | [Naive](#naive-get) |  Yes  | [Naive](#naive-search) | Yes             | None           |
+|   github.repos.Repos   |         Yes         |  Yes  |          Yes           | Yes             | Token          |
+|  greenhouse.jobs.Jobs  |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | None           |
+|   jira.issues.Issues   |         Yes         |  Yes  |          Yes           | Yes             | Basic          |
 
 ## Caveats by repository
 
@@ -57,6 +60,17 @@ To provide tooling for developers of unified and federated search platforms.
     - † There is a simple retry system in place to address the aforementioned 500 error
       But it should be abstracted out into a more general retry system that can be applied
       to other repositories.
+  - `file.csv.Rows`
+    - † There is no options for caching the file. If a URL is used, that means every time the
+      file is queried, it will be downloaded (e.g. every get, search, or list operation). In the
+      future, it would be nice to be able to cache the file either in memory or on disk with some
+      sort of TTL.
+    - Because CSVs have no natural pages, there is a page_size option that can be used to limit
+      the number of rows returned per page. The default is 20. This allows you to load in some data
+      without loading the entire file into memory.
+    - Because CSV rows have no natural primary key, the identifier defaults to the row index. You can
+      change this by passing an identifier to the repository, which expects either the name of a column
+      or a tuple of column names.
 - `github.repos.Repos`
     - † May need additional work to mitigate rate limiting issues.
     - ~~† Uses PyGithub, which is not async.~~
@@ -78,7 +92,12 @@ have some quirks. Here are some of them.
 ### Naive search
 
 Search is not natively supported by all sources. As a workaround, some sources fall back to an
-implementation that performs a naive text search on the raw data for each item in the repository.
+implementation that performs a text search on the raw data for each item in the repository.
+
+### Naive get
+
+Get is not natively supported by all sources. As a workaround, some sources fall back to an
+implementation that performs a scan of the entire repository to find the item with the given ID.
 
 ### Single page repositories
 

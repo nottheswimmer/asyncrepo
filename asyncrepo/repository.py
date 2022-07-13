@@ -24,25 +24,25 @@ class Repository(ABC):
             yield page
             page = await page.next_page()
 
-    async def search(self, *args, **kwargs) -> AsyncGenerator['Item', None]:
-        async for page in self.search_pages(*args, **kwargs):
+    async def search(self, query: str, *args, **kwargs) -> AsyncGenerator['Item', None]:
+        async for page in self.search_pages(query, *args, **kwargs):
             for item in page:
                 yield item
 
-    async def search_pages(self, *args, **kwargs) -> AsyncGenerator['Page', None]:
-        page = await self.search_page(*args, **kwargs)
-        while page:
+    async def search_pages(self, query: str, *args, **kwargs) -> AsyncGenerator['Page', None]:
+        page = await self.search_page(query, *args, **kwargs)
+        while page is not None:
             yield page
             page = await page.next_page()
 
-    async def search_page(self, *args, **kwargs) -> 'Page':
+    async def search_page(self, query: str, *args, **kwargs) -> 'Page':
         """
         Search for items in the repository.
 
         This is meant to be overridden by the repository, but a default implementation is provided that uses the
         list_page method for asyncrepo for cases where no repository-specific search is available.
         """
-        return await self._list_search(*args, **kwargs)
+        return await self._list_search(query, *args, **kwargs)
 
     @abstractmethod
     async def list_page(self, *args, **kwargs) -> 'Page':

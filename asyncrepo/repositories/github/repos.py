@@ -16,13 +16,13 @@ class Repos(Repository):
     the authenticated user's asyncrepo will be returned.
     """
 
-    def __init__(self, login_or_token: str, /, user: Optional[str] = None, org: Optional[str] = None, **github_kwargs):
+    def __init__(self, login_or_token: str, /, user: Optional[str] = None, org: Optional[str] = None,
+                 github_kwargs: Optional[dict] = None):
         """
         Initialize a new Repositories repository for the specified user or organization.
         """
         super().__init__()
-        # TODO: Non-blocking GitHub Client
-        self._client = GithubClient(login_or_token, **github_kwargs)
+        self._client = GithubClient(login_or_token, **(github_kwargs or {}))
 
         if user and org:
             raise ValueError('Cannot specify both user and org')

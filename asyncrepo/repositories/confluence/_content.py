@@ -6,10 +6,9 @@ from asyncrepo.utils.confluence_client import ConfluenceClient
 
 
 class _Content(Repository):
-    def __init__(self, base_url: str, username: str, password: str, *args,
-                 base_path: str = "/wiki",
-                 _type: Optional[str] = None, _space: Optional[str] = None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, base_url: str, username: str, password: str, base_path: str = "/wiki",
+                 _type: Optional[str] = None, _space: Optional[str] = None):
+        super().__init__()
         self.confluence_client = None
         self._base_url = base_url
         self._base_path = base_path
