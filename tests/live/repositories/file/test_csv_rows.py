@@ -1,8 +1,7 @@
 import pytest
 
-from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.repositories.file.csv_rows import CSVRows
-from asyncrepo.repository import Item, Page, Repository
+from asyncrepo.repository import Item, Page
 
 
 def get_repository():

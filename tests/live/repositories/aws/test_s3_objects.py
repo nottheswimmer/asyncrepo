@@ -1,13 +1,24 @@
+import os
+
 import pytest
 import uuid
+
+from dotenv import load_dotenv
 
 from asyncrepo.repository import Page, Item, Repository
 from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.repositories.aws.s3_objects import S3Objects
 
 
+load_dotenv()
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+
 def get_repository():
-    return S3Objects("asyncrepo")
+    return S3Objects("asyncrepo", aioboto_session_kwargs={"aws_access_key_id": AWS_ACCESS_KEY_ID,
+                                                         "aws_secret_access_key": AWS_SECRET_ACCESS_KEY})
 
 
 @pytest.mark.asyncio
