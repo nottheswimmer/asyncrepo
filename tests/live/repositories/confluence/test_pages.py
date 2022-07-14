@@ -31,6 +31,8 @@ KNOWN_PAGES = [
     tc(id=229443, title="Overview", search_term="Overview"),
     tc(id=229442, title="Sample Pages", search_term="Sample Pages"),
 ]
+EXTRA_UNLISTED_PAGES = 1
+TOTAL_PAGES = len(KNOWN_PAGES) + EXTRA_UNLISTED_PAGES
 
 
 def assert_item_matches_test_page(item: Item, test_page: tc):
@@ -62,8 +64,8 @@ async def test_list():
             assert item.identifier not in identifiers
             assert item.identifier == item.raw['id']
             identifiers.add(item.identifier)
-    assert total_items == len(KNOWN_PAGES)
-    assert total_pages == ceil(len(KNOWN_PAGES) / 2)
+    assert total_items == TOTAL_PAGES
+    assert total_pages == ceil(TOTAL_PAGES / 2)
     for known_page in KNOWN_PAGES:
         assert str(known_page.id) in identifiers
 

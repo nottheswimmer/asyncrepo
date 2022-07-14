@@ -1,6 +1,7 @@
 import asyncio
 from typing import Optional
 
+from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.repository import Repository, Page, Item
 from asyncrepo.utils.confluence_client import ConfluenceClient
 
@@ -32,9 +33,11 @@ class _Content(Repository):
                     base_url=self._base_url, base_path=self._base_path,
                     username=self._username, password=self._password)
 
-    async def get(self, identifier: str) -> Item:
+    async def get(self, identifier: str, strict: bool = True) -> Item:
         await self._ensure_confluence_client()
         data = await self.confluence_client.get_content(identifier)
+        if strict and data['type'] != self._type:
+            raise ItemNotFoundError(identifier, f"Resource was of type {data['type']} but expected {self._type}")
         return Item(self, data['id'], data)
 
     async def _search_cql(self, cql: str, current: int = 0, **kwargs) -> Page:
