@@ -22,6 +22,7 @@ To provide tooling for developers of unified and federated search platforms.
 
 ## Currently supported repositories
 
+- `aws.buckets.Buckets` - AWS S3 buckets belonging to the current user.
 - `confluence.pages.Pages` - Confluence pages belonging to a given organization
 - `file.csv.Rows` - CSV rows within a given file specified by filepath or URL
 - `github.repos.Repos` - GitHub repositories belonging to a given user or organization.
@@ -38,18 +39,22 @@ To provide tooling for developers of unified and federated search platforms.
 
 ## Support by repository
 
-|       Repository       |        .get         | .list |        .search         | Non-blocking IO | Authentication |
-|:----------------------:|:-------------------:|:-----:|:----------------------:|-----------------|----------------|
-| confluence.pages.Pages |         Yes         |  Yes  |          Yes           | Yes             | Basic          |
-|     file.csv.Rows      | [Naive](#naive-get) |  Yes  | [Naive](#naive-search) | Yes             | None           |
-|   github.repos.Repos   |         Yes         |  Yes  |          Yes           | Yes             | Token          |
-|  greenhouse.jobs.Jobs  |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | None           |
-|   jira.issues.Issues   |         Yes         |  Yes  |          Yes           | Yes             | Basic          |
+|       Repository       |        .get         | .list |        .search         | Non-blocking IO | Authentication                                                                        |
+|:----------------------:|:-------------------:|:-----:|:----------------------:|-----------------|---------------------------------------------------------------------------------------|
+|  aws.buckets.Buckets   |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | [AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) |
+| confluence.pages.Pages |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
+|     file.csv.Rows      | [Naive](#naive-get) |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
+|   github.repos.Repos   |         Yes         |  Yes  |          Yes           | Yes             | Token                                                                                 |
+|  greenhouse.jobs.Jobs  |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
+|   jira.issues.Issues   |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
 
 ## Caveats by repository
 
 †: On the roadmap of things to be addressed.
 
+- `aws.buckets.Buckets`
+    - Get the [AWS CLI](https://aws.amazon.com/cli/) and use `aws configure` to use the repository.
+      You can also pass in your credentials directly to the repository.
 - `confluence.pages.Pages`
     - † No options to limit the repository scope to a specific space.
     - The search API seems to occasionally return an empty result set for a query
@@ -60,17 +65,17 @@ To provide tooling for developers of unified and federated search platforms.
     - † There is a simple retry system in place to address the aforementioned 500 error
       But it should be abstracted out into a more general retry system that can be applied
       to other repositories.
-  - `file.csv.Rows`
-    - † There is no options for caching the file. If a URL is used, that means every time the
-      file is queried, it will be downloaded (e.g. every get, search, or list operation). In the
-      future, it would be nice to be able to cache the file either in memory or on disk with some
-      sort of TTL.
-    - Because CSVs have no natural pages, there is a page_size option that can be used to limit
-      the number of rows returned per page. The default is 20. This allows you to load in some data
-      without loading the entire file into memory.
-    - Because CSV rows have no natural primary key, the identifier defaults to the row index. You can
-      change this by passing an identifier to the repository, which expects either the name of a column
-      or a tuple of column names.
+- `file.csv.Rows`
+  - † There is no options for caching the file. If a URL is used, that means every time the
+    file is queried, it will be downloaded (e.g. every get, search, or list operation). In the
+    future, it would be nice to be able to cache the file either in memory or on disk with some
+    sort of TTL.
+  - Because CSVs have no natural pages, there is a page_size option that can be used to limit
+    the number of rows returned per page. The default is 20. This allows you to load in some data
+    without loading the entire file into memory.
+  - Because CSV rows have no natural primary key, the identifier defaults to the row index. You can
+    change this by passing an identifier to the repository, which expects either the name of a column
+    or a tuple of column names.
 - `github.repos.Repos`
     - † May need additional work to mitigate rate limiting issues.
     - ~~† Uses PyGithub, which is not async.~~
@@ -128,6 +133,7 @@ The following is a list of things that might be worked on next.
 - More enterprise-friendly implementations. Testing is done on cloud-hosted services
   and those APIs are often different from the on-premise ones. Submit a ticket or a
   pull request if you want to help.
+- Split dependencies into separate packages depending on which repositories are desired.
 
 ### Potential Repositories
 
@@ -145,8 +151,7 @@ The following is a list of things that might be worked on next.
 - [ ] `google.drive.Files`
 - [ ] `google.mail.Mail`
 - [ ] `google.calendar.Events`
-- [ ] `aws.s3.Objects`
-- [ ] `aws.s3.Buckets`
+- [ ] `aws.buckets.Objects`
 - [ ] `github.code.Code`
 
 ## Contribution Guidelines
