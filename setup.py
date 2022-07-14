@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='asyncrepo',
-    version='0.0.7',
+    version='0.0.8',
     description='A library for providing a unified asyncio API for various data sources',
     long_description=long_description,
     long_description_content_type='text/markdown',

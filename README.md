@@ -10,7 +10,8 @@
 
 For now, just check out the live tests for some examples:
 
-- [AWS Buckets Test](tests/live/repositories/aws/test_buckets.py)
+- [AWS S3 Buckets Test](tests/live/repositories/aws/test_s3_buckets.py)
+- [AWS S3 Objects Test](tests/live/repositories/aws/test_s3_objects.py)
 - [Confluence Pages Test](tests/live/repositories/confluence/test_pages.py)
 - [File CSV Rows Test](tests/live/repositories/file/test_csv_rows.py)
 - [GitHub Repos Test](tests/live/repositories/github/test_repos.py)
@@ -23,7 +24,8 @@ To provide tooling for developers of unified and federated search platforms.
 
 ## Currently supported repositories
 
-- `aws.buckets.Buckets` - AWS S3 buckets belonging to the current user.
+- `aws.s3_buckets.S3Buckets` - AWS S3 buckets belonging to the current user.
+- `aws.s3_objects.S3Objects` - AWS S3 objects belonging to a bucket.
 - `confluence.pages.Pages` - Confluence pages belonging to a given organization
 - `file.csv.Rows` - CSV rows within a given file specified by filepath or URL
 - `github.repos.Repos` - GitHub repositories belonging to a given user or organization.
@@ -40,22 +42,27 @@ To provide tooling for developers of unified and federated search platforms.
 
 ## Support by repository
 
-|       Repository       |        .get         | .list |        .search         | Non-blocking IO | Authentication                                                                        |
-|:----------------------:|:-------------------:|:-----:|:----------------------:|-----------------|---------------------------------------------------------------------------------------|
-|  aws.buckets.Buckets   |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | [AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) |
-| confluence.pages.Pages |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
-|     file.csv.Rows      | [Naive](#naive-get) |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
-|   github.repos.Repos   |         Yes         |  Yes  |          Yes           | Yes             | Token                                                                                 |
-|  greenhouse.jobs.Jobs  |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
-|   jira.issues.Issues   |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
+|        Repository        |        .get         | .list |        .search         | Non-blocking IO | Authentication                                                                        |
+|:------------------------:|:-------------------:|:-----:|:----------------------:|-----------------|---------------------------------------------------------------------------------------|
+| aws.s3_buckets.S3Buckets |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | [AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) |
+| aws.s3_objects.S3Objects |         Yes         |  Yes  |          Yes           | Yes             | [AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) |
+|  confluence.pages.Pages  |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
+|      file.csv.Rows       | [Naive](#naive-get) |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
+|    github.repos.Repos    |         Yes         |  Yes  |          Yes           | Yes             | Token                                                                                 |
+|   greenhouse.jobs.Jobs   |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
+|    jira.issues.Issues    |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
 
 ## Caveats by repository
 
 †: On the roadmap of things to be addressed.
 
-- `aws.buckets.Buckets`
-    - Get the [AWS CLI](https://aws.amazon.com/cli/) and use `aws configure` to use the repository.
-      You can also pass in your credentials directly to the repository.
+- `aws.s3_buckets.S3Buckets`
+    - † Only basic metadata is available about buckets.
+    - † Currently implemented as a [single page repository](#single-page-repositories).
+- `aws.s3_objects.S3Objects`
+    - † No options to get the contents of an object.
+    - † Only basic metadata is available about objects.
+    - Search is implemented using the prefix search API.
 - `confluence.pages.Pages`
     - † No options to limit the repository scope to a specific space.
     - The search API seems to occasionally return an empty result set for a query
@@ -152,7 +159,6 @@ The following is a list of things that might be worked on next.
 - [ ] `google.drive.Files`
 - [ ] `google.mail.Mail`
 - [ ] `google.calendar.Events`
-- [ ] `aws.buckets.Objects`
 - [ ] `github.code.Code`
 
 ## Contribution Guidelines

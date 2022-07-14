@@ -3,11 +3,11 @@ import uuid
 
 from asyncrepo.repository import Page, Item, Repository
 from asyncrepo.exceptions import ItemNotFoundError
-from asyncrepo.repositories.aws.buckets import Buckets
+from asyncrepo.repositories.aws.s3_buckets import S3Buckets
 
 
 def get_repository():
-    return Buckets()
+    return S3Buckets()
 
 
 @pytest.mark.asyncio

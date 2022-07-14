@@ -4,7 +4,7 @@ from asyncrepo.exceptions import ItemNotFoundError
 from asyncrepo.repository import Repository, Page, Item
 
 
-class Buckets(Repository):
+class S3Buckets(Repository):
     """
     AWS S3 buckets
     """
