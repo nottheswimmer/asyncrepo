@@ -1,5 +1,8 @@
 # [asyncrepo](https://github.com/nottheswimmer/asyncrepo)
 
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/asyncrepo)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/asyncrepo)
+
 `asyncrepo` provides a unified async interface for retrieving data from a variety of sources.
 
 ## Installation
