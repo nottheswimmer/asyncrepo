@@ -15,19 +15,6 @@ class ResourceStreamer:
         self.is_file = is_file
         self.size = size
 
-    async def stream(self):
-        filepath = None
-        if self.is_file in [None, True]:
-            filepath = await self._resolve_filepath()
-        if filepath is not None:
-            async for line in self._stream_filepath(filepath):
-                yield line
-        elif self.is_file in [None, False]:
-            async for line in self._stream_url(self.filepath_or_url):
-                yield line
-        else:
-            raise ValueError('Invalid filepath or URL', self.filepath_or_url)
-
     async def stream_csv(self, **csv_reader_kwargs):
         filepath = None
         if self.is_file in [None, True]:
@@ -59,36 +46,6 @@ class ResourceStreamer:
         if not await path.is_file():
             return None
         return path
-
-    async def _stream_filepath(self, filepath: AsyncPath):
-        async with filepath.open('r') as f:
-            if self.size is None:
-                async for line in f:
-                    yield line
-            else:
-                f: AsyncFile
-                while True:
-                    line = await f.read(self.size)
-                    if not line:
-                        break
-                    yield line
-
-    async def _stream_url(self, url: str, errors='strict'):
-        async with HttpClient() as client:
-            async with client.get(url) as r:
-                encoding = r.headers.get('Content-Type', '').split('charset=')
-                encoding = encoding[1] if len(encoding) > 1 else 'utf-8'
-                decoder_factory = codecs.getincrementaldecoder(encoding)
-
-                self.decoder = decoder_factory(errors)
-
-                if not self.size:
-                    async for line in r.content.iter_any():
-                        yield self.decoder.decode(line, final=False)
-                else:
-                    async for line in r.content.iter_chunked(self.size):
-                        yield self.decoder.decode(line, final=False)
-                yield self.decoder.decode(b'', final=True)
 
     async def _stream_csv_url(self, url: str, **csv_reader_kwargs):
         async with HttpClient() as client:
