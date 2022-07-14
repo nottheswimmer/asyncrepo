@@ -10,6 +10,7 @@
 
 For now, just check out the live tests for some examples:
 
+- [AWS Buckets Test](tests/live/repositories/aws/test_buckets.py)
 - [Confluence Pages Test](tests/live/repositories/confluence/test_pages.py)
 - [File CSV Rows Test](tests/live/repositories/file/test_csv_rows.py)
 - [GitHub Repos Test](tests/live/repositories/github/test_repos.py)
