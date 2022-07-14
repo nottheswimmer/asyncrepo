@@ -6,7 +6,7 @@ from typing import NamedTuple
 import pytest
 from dotenv import load_dotenv
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repositories.confluence.pages import Pages
 from asyncrepo.repository import Item, Page, Repository
 
@@ -37,9 +37,9 @@ TOTAL_PAGES = len(KNOWN_PAGES) + EXTRA_UNLISTED_PAGES
 
 def assert_item_matches_test_page(item: Item, test_page: tc):
     assert isinstance(item, Item)
-    assert item.identifier == str(test_page.id)
-    assert item.raw['id'] == str(test_page.id)
-    assert item.raw['title'] == test_page.title
+    assert item.id == str(test_page.id)
+    assert item.document['id'] == str(test_page.id)
+    assert item.document['title'] == test_page.title
 
 
 def get_repository():
@@ -61,9 +61,9 @@ async def test_list():
         for item in page.items:
             assert isinstance(item, Item)
             total_items += 1
-            assert item.identifier not in identifiers
-            assert item.identifier == item.raw['id']
-            identifiers.add(item.identifier)
+            assert item.id not in identifiers
+            assert item.id == item.document['id']
+            identifiers.add(item.id)
     assert total_items == TOTAL_PAGES
     assert total_pages == ceil(TOTAL_PAGES / 2)
     for known_page in KNOWN_PAGES:
@@ -78,7 +78,7 @@ async def test_get_when_identifier_id_exists():
 
 @pytest.mark.asyncio
 async def test_get_when_identifier_does_not_exist():
-    with pytest.raises(ItemNotFoundError):
+    with pytest.raises(ItemNotFound):
         await get_repository().get('1333337')
 
 
@@ -92,7 +92,7 @@ async def test_search():
         async for page in repository.search_pages(test_item.search_term):
             assert isinstance(page, Page)
             for item in page.items:
-                seen[item.identifier] = item
+                seen[item.id] = item
 
         # str(test_item.id) in seen: Fails
         # str(test_item.id) in list(seen.keys()): Works?

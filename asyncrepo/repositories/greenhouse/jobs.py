@@ -1,4 +1,4 @@
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repository import Repository, Page, Item
 from asyncrepo.utils.http_client import HttpClient
 
@@ -50,7 +50,7 @@ class Jobs(Repository):
         async with HttpClient(self.base_url) as client:
             async with client.get(self._item_endpoint(job_id), params=params) as r:
                 if r.status == 404:
-                    raise ItemNotFoundError(job_id)
+                    raise ItemNotFound(job_id)
                 r.raise_for_status()
                 data = await r.json()
                 return self._item_from_payload(data)

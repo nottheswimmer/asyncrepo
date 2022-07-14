@@ -17,9 +17,9 @@ class Issues(Repository):
             if self.jira_client is None:
                 self.jira_client = JiraClient(self._base_url, self._username, self._password)
 
-    async def get(self, identifier: str) -> Item:
+    async def get(self, id: str) -> Item:
         await self._ensure_jira_client()
-        data = await self.jira_client.get_issue(identifier)
+        data = await self.jira_client.get_issue(id)
         return Item(self, data['id'], data)
 
     async def _search_jql(self, jql: str, current: int = 0, *args, **kwargs) -> Page:

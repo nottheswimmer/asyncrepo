@@ -5,7 +5,7 @@ from github import UnknownObjectException
 from github.PaginatedList import PaginatedList
 from github.Repository import Repository as GithubRepository
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repository import Repository, Page, Item
 from asyncrepo.utils.github_client import GithubClient
 
@@ -56,16 +56,16 @@ class Repos(Repository):
         paginated_list = self._user_or_org.get_repos(*args, **kwargs, **self._list_kwargs)
         return await self._page_from_paginated_list(paginated_list)
 
-    async def get(self, identifier: str) -> Item:
+    async def get(self, id: str) -> Item:
         """
         Get the repository with the specified identifier. This will return any repository the client has access to,
         regardless of whether it's associated with the user or organization.
         """
         await self._ensure_user_or_org()
         try:
-            repo = await self._client.get_repo(identifier)
+            repo = await self._client.get_repo(id)
         except UnknownObjectException:
-            raise ItemNotFoundError(identifier)
+            raise ItemNotFound(id)
         return await self._item_from_github_repo(repo)
 
     async def search_page(self, query: str, *args, **kwargs) -> 'Page':

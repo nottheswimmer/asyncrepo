@@ -1,6 +1,6 @@
 import pytest
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repositories.greenhouse.jobs import Jobs
 from asyncrepo.repository import Item, Page, Repository
 
@@ -23,8 +23,8 @@ async def test_list():
         for item in page.items:
             assert isinstance(item, Item)
             total_items += 1
-            assert item.identifier not in identifiers
-            identifiers.add(item.identifier)
+            assert item.id not in identifiers
+            identifiers.add(item.id)
     assert total_pages == 1  # Greenhouse only has one page
     assert total_items > 0
 
@@ -34,15 +34,15 @@ async def test_get_when_identifier_exists():
     identifier = None
     async for page in get_repository().list_pages():
         for item in page.items:
-            identifier = item.identifier
+            identifier = item.id
             break
 
     item = await get_repository().get(identifier)
     assert isinstance(item, Item)
-    assert item.identifier == identifier
+    assert item.id == identifier
 
 
 @pytest.mark.asyncio
 async def test_get_when_identifier_does_not_exist():
-    with pytest.raises(ItemNotFoundError):
+    with pytest.raises(ItemNotFound):
         await get_repository().get('fake-job-id')

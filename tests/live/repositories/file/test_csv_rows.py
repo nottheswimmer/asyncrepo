@@ -21,8 +21,8 @@ async def test_can_list_page():
         for item in page.items:
             assert isinstance(item, Item)
             total_items += 1
-            assert item.identifier not in identifiers
-            identifiers.add(item.identifier)
+            assert item.id not in identifiers
+            identifiers.add(item.id)
         if total_pages == 5:
             break
     assert total_pages == 5
@@ -33,8 +33,8 @@ async def test_can_list_page():
 async def test_can_get_item():
     item = await get_repository().get(str(('2020-03-01', 'New York City', 'New York')))
     assert isinstance(item, Item)
-    assert item.identifier == str(('2020-03-01', 'New York City', 'New York'))
-    assert item.raw == {
+    assert item.id == str(('2020-03-01', 'New York City', 'New York'))
+    assert item.document == {
         'date': '2020-03-01',
         'county': 'New York City',
         'state': 'New York',
@@ -49,7 +49,7 @@ async def test_can_search():
     total_items = 0
     async for item in get_repository().search("new york city"):
         assert isinstance(item, Item)
-        assert item.raw['county'] == "New York City"
+        assert item.document['county'] == "New York City"
         total_items += 1
         if total_items == 10:
             break

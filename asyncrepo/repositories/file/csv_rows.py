@@ -1,4 +1,4 @@
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repository import Repository, Page, Item
 from asyncrepo.utils.resource_streamer import ResourceStreamer
 
@@ -35,18 +35,18 @@ class CSVRows(Repository):
                 return await self.list_page(*args, _stream=_stream, _index=_index, **kwargs)
         return Page(self, rows, next_page_fn)
 
-    async def get(self, identifier: str) -> Item:
+    async def get(self, id: str) -> Item:
         """
         Get a row by identifier
         """
-        identifier = str(identifier)
+        id = str(id)
         index = 0
         async for page in self.list_pages():
             for item in page:
-                if item.identifier == identifier:
+                if item.id == id:
                     return item
                 index += 1
-        raise ItemNotFoundError(identifier)
+        raise ItemNotFound(id)
 
     def _row_identifier(self, row: dict, index: int) -> str:
         if self.identifier is INDEX:

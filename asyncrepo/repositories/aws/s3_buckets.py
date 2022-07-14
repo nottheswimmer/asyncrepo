@@ -1,6 +1,6 @@
 import aioboto3
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repository import Repository, Page, Item
 
 
@@ -22,16 +22,16 @@ class S3Buckets(Repository):
                 buckets.append(await self._bucket_to_item(bucket))
             return Page(self, buckets)
 
-    async def get(self, identifier: str) -> Item:
+    async def get(self, id: str) -> Item:
         """
         Get a bucket by identifier
         """
         async with self.session.resource("s3") as s3:
             try:
-                bucket = await s3.Bucket(identifier)
+                bucket = await s3.Bucket(id)
             except Exception as e:
                 if e.__class__.__name__ == "NoSuchBucket":
-                    raise ItemNotFoundError(identifier)
+                    raise ItemNotFound(id)
                 raise
 
             # The above appears to not always work, so here's a fallback approach:
@@ -39,7 +39,7 @@ class S3Buckets(Repository):
             # I'm assuming all buckets have a creation date and that anyone with access to the bucket
             # can get the creation date
             if not await bucket.creation_date:
-                raise ItemNotFoundError(identifier)
+                raise ItemNotFound(id)
 
             return await self._bucket_to_item(bucket)
 

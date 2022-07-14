@@ -49,7 +49,7 @@ class Repository(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get(self, identifier: str) -> 'Item':
+    async def get(self, id: str) -> 'Item':
         raise NotImplementedError()
 
     async def _list_search(self, query: str, *args, **kwargs) -> 'Page':
@@ -95,10 +95,10 @@ class Page:
 
 
 class Item:
-    def __init__(self, repository: RepositoryImplementation, identifier: str, raw: dict):
+    def __init__(self, repository: RepositoryImplementation, id: str, document: dict):
         self.repository = repository
-        self.identifier = identifier
-        self.raw = raw
+        self.id = id
+        self.document = document
 
     def matches(self, query: str) -> bool:
-        return matches(query, self.raw)
+        return matches(query, self.document)

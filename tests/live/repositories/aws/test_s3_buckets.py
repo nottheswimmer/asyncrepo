@@ -6,7 +6,7 @@ import uuid
 from dotenv import load_dotenv
 
 from asyncrepo.repository import Page, Item, Repository
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repositories.aws.s3_buckets import S3Buckets
 
 load_dotenv()
@@ -34,7 +34,7 @@ async def test_list_page():
         for item in page:
             assert isinstance(item, Item)
             total_buckets += 1
-            if item.identifier == "asyncrepo":
+            if item.id == "asyncrepo":
                 async_repo_seen = True
     assert total_pages == 1  # This is a single page repository
     assert total_buckets > 0
@@ -43,10 +43,10 @@ async def test_list_page():
 
 @pytest.mark.asyncio
 async def test_get():
-    assert (await get_repository().get("asyncrepo")).identifier == "asyncrepo"
+    assert (await get_repository().get("asyncrepo")).id == "asyncrepo"
 
 
 @pytest.mark.asyncio
 async def test_get_not_found():
-    with pytest.raises(ItemNotFoundError):
+    with pytest.raises(ItemNotFound):
         await get_repository().get(uuid.uuid4().hex)

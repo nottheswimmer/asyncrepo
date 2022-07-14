@@ -1,6 +1,6 @@
 import aioboto3
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repository import Repository, Page, Item
 
 
@@ -36,17 +36,17 @@ class S3Objects(Repository):
                 return Page(self, objects, next_page_fn)
 
 
-    async def get(self, identifier: str) -> Item:
+    async def get(self, id: str) -> Item:
         """
         Get an object by identifier
         """
         async with self.session.resource("s3") as s3:
             try:
-                obj = await s3.Object(self.bucket_name, identifier)
+                obj = await s3.Object(self.bucket_name, id)
                 return await self._object_to_item(obj)
             except Exception as e:
                 if hasattr(e, "response") and e.response["Error"]["Code"] == "404":
-                    raise ItemNotFoundError(identifier)
+                    raise ItemNotFound(id)
                 raise
 
 

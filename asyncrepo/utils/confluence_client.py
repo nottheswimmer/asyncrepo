@@ -1,7 +1,7 @@
 import asyncio
 import warnings
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.utils.http_client import BasicAuthHttpClient
 
 warnings.filterwarnings("ignore", message="Inheritance class ConfluenceClient from ClientSession is discouraged")
@@ -18,7 +18,7 @@ class ConfluenceClient(BasicAuthHttpClient):
     async def get_content(self, content_id_or_key: str) -> dict:
         async with self.get(self._base_path + f"/rest/api/content/{content_id_or_key}") as response:
             if response.status == 404:
-                raise ItemNotFoundError(content_id_or_key)
+                raise ItemNotFound(content_id_or_key)
             response.raise_for_status()
             return await response.json()
 

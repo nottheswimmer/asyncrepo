@@ -5,7 +5,7 @@ from os import environ
 import pytest
 from dotenv import load_dotenv
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repositories.github.repos import Repos
 from asyncrepo.repository import Item, Page, Repository
 
@@ -39,9 +39,9 @@ async def test_list():
         for item in page.items:
             assert isinstance(item, Item)
             total_items += 1
-            assert item.identifier not in identifiers
-            assert GITHUB_USER == item.raw['owner']['login']
-            identifiers.add(item.identifier)
+            assert item.id not in identifiers
+            assert GITHUB_USER == item.document['owner']['login']
+            identifiers.add(item.id)
     assert total_pages > 0
     assert total_items > 0
     for known_repository in KNOWN_REPOSITORIES:
@@ -52,12 +52,12 @@ async def test_list():
 async def test_get_when_identifier_exists():
     item = await get_repository().get(KNOWN_REPOSITORIES[0])
     assert isinstance(item, Item)
-    assert item.identifier == KNOWN_REPOSITORIES[0]
+    assert item.id == KNOWN_REPOSITORIES[0]
 
 
 @pytest.mark.asyncio
 async def test_get_when_identifier_does_not_exist():
-    with pytest.raises(ItemNotFoundError):
+    with pytest.raises(ItemNotFound):
         await get_repository().get(f'{GITHUB_USER}/non-existent')
 
 

@@ -6,7 +6,7 @@ from typing import NamedTuple
 import pytest
 from dotenv import load_dotenv
 
-from asyncrepo.exceptions import ItemNotFoundError
+from asyncrepo.exceptions import ItemNotFound
 from asyncrepo.repositories.jira.issues import Issues
 from asyncrepo.repository import Item, Page, Repository
 
@@ -28,10 +28,10 @@ KNOWN_ISSUES = [
 
 def assert_item_matches_test_issue(item: Item, test_issue: ti):
     assert isinstance(item, Item)
-    assert item.identifier == str(test_issue.id)
-    assert item.raw['id'] == str(test_issue.id)
-    assert item.raw['key'] == test_issue.key
-    assert item.raw['fields']['summary'] == test_issue.summary
+    assert item.id == str(test_issue.id)
+    assert item.document['id'] == str(test_issue.id)
+    assert item.document['key'] == test_issue.key
+    assert item.document['fields']['summary'] == test_issue.summary
 
 
 def get_repository():
@@ -53,9 +53,9 @@ async def test_list():
         for item in page.items:
             assert isinstance(item, Item)
             total_items += 1
-            assert item.identifier not in identifiers
-            assert item.identifier == item.raw['id']
-            identifiers.add(item.identifier)
+            assert item.id not in identifiers
+            assert item.id == item.document['id']
+            identifiers.add(item.id)
     assert total_pages == ceil(len(KNOWN_ISSUES) / 2)
     assert total_items == len(KNOWN_ISSUES)
     for known_issue in KNOWN_ISSUES:
@@ -76,7 +76,7 @@ async def test_get_when_identifier_key_exists():
 
 @pytest.mark.asyncio
 async def test_get_when_identifier_does_not_exist():
-    with pytest.raises(ItemNotFoundError):
+    with pytest.raises(ItemNotFound):
         await get_repository().get('AS-0')
 
 

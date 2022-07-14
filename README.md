@@ -2,6 +2,7 @@
 
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/asyncrepo)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/asyncrepo)
+![PyPI - License](https://img.shields.io/pypi/l/asyncrepo)
 
 `asyncrepo` provides a unified async interface for retrieving data from a variety of sources.
 
@@ -42,6 +43,9 @@ To provide tooling for developers of unified and federated search platforms.
 - `.list_pages()`: Get a paginated iterator for all items in the repository.
 - `.search(query: str)`: Get an iterator for all items in the repository that match the query.
 - `.search_pages(query: str)`: Get a paginated iterator for all items in the repository that match the query.
+
+## Exceptions
+- `asyncrepo.exceptions.ItemNotFound`: Raised by .get(id: str) if the item does not exist in the repository.
 
 ## Support by repository
 
@@ -84,8 +88,8 @@ To provide tooling for developers of unified and federated search platforms.
   - Because CSVs have no natural pages, there is a page_size option that can be used to limit
     the number of rows returned per page. The default is 20. This allows you to load in some data
     without loading the entire file into memory.
-  - Because CSV rows have no natural primary key, the identifier defaults to the row index. You can
-    change this by passing an identifier to the repository, which expects either the name of a column
+  - Because CSV rows have no natural primary key, the id defaults to the row index. You can
+    change this by passing an id to the repository, which expects either the name of a column
     or a tuple of column names.
 - `github.repos.Repos`
     - † May need additional work to mitigate rate limiting issues.
@@ -96,7 +100,7 @@ To provide tooling for developers of unified and federated search platforms.
     - It is a [single page repository](#single-page-repositories).
 - `jira.issues.Issues`
     - † No options to limit the repository scope to a specific project.
-    - The .get method accepts either keys or IDs, but the .identifier for items is always the ID.
+    - The .get method accepts either keys or IDs, but the .id for items is always the ID.
       This is because the ID doesn't change, whereas the key could change by moving the issue to
       a different project.
 
@@ -124,8 +128,8 @@ are returned as the first and only page.
 
 All items are represented by an `Item` object. This object has the following attributes:
 
-- `identifier`: A string that uniquely identifies item, which can be passed to `Repository.get` to retrieve the item.
-- `raw`: A dictionary containing the raw data for the item.
+- `id`: A string that uniquely identifies item, which can be passed to `Repository.get` to retrieve the item.
+- `document`: A dictionary containing the data for the item.
 - `repository`: The repository that contains the item.
 
 ## Wish list
@@ -137,7 +141,6 @@ The following is a list of things that might be worked on next.
 - Addressing [caveats](#caveats-by-repository) as indicated (†).
 - Making the live tests runnable in GitHub Actions.
 - Write mock tests for the various supported repositories.
-- Add common optional attributes to all items. Things like `title`, `description`, `url`, `created_at`, etc.
 - Add a meta repository that can combine multiple repositories.
 - Support for non-default orderings.
 - Stop subclassing ClientSession from aiohttp because it makes the developer sad.
@@ -145,8 +148,48 @@ The following is a list of things that might be worked on next.
   and those APIs are often different from the on-premise ones. Submit a ticket or a
   pull request if you want to help.
 - Split dependencies into separate packages depending on which repositories are desired.
+- Normalize and extensively document repository constructors. For now, look at the tests or the code.
+- Naive get as described isn't actually a default fallback for when get isn't implemented. I should add a
+  default implementation that falls back to looking for the item by using an implemented list method.
+- Stable API. Right now, the API is unstable and can change at any time.
+
+### Potential Operations
+
+- [ ] `Repository.create(item)`
+- [ ] `Repository.update(item)`
+- [ ] `Repository.delete(item)`
+- [ ] `Item.save(upsert: bool=True)`
+- [ ] `Item.delete()`
+
+### Potential exceptions
+
+- [ ] `asyncrepo.exceptions.PermissionDenied` - When the user is not authorized to perform the operation.
+- [ ] `asyncrepo.exceptions.OperationNotSupported` - When the operation is not supported by the repository.
+- [ ] `asyncrepo.exceptions.ItemAlreadyExists` - When the item already exists and upsert is False.
+
+### Potential properties
+
+These properties could be added to the `Item` class to provide useful output for search results
+and other use cases.
+
+- [ ] `Item.title: Optional[str]` - Page titles, ticket summaries, filenames, etc.
+- [ ] `Item.text: Optional[str]` - Page content, ticket descriptions, file contents, etc.
+- [ ] `Item.url: Optional[str]` - URL to the page, ticket, file, etc.
+- [ ] `Item.image_url: Optional[str]` - Ticket status icon, file thumbnail, etc.
+- [ ] `Item.facets: Dict[str, str]` - Potentially an extensive list of facets for items. File type, ticket status, etc.
+- [ ] `Item.created_at: Optional[datetime]` - Date and time the item was created.
+- [ ] `Item.updated_at: Optional[datetime]` - Date and time the item was last updated.
+- [ ] `Item.created_by: Optional[str]` - User that created the item.
+- [ ] `Item.updated_by: Optional[str]` - User that last updated the item.
+- [ ] `Item.created_by_url: Optional[str]` - URL to the user that created the item.
+- [ ] `Item.updated_by_url: Optional[str]` - URL to the user that last updated the item.
+- [ ] `Item.created_by_avatar_url: Optional[str]` - URL to the user's avatar that created the item.
+- [ ] `Item.updated_by_avatar_url: Optional[str]` - URL to the user's avatar that last updated the item.
 
 ### Potential Repositories
+
+There's so many things that there could be repositories for -- this is just a very short
+list I keep track of for inspiration.
 
 - [ ] `jira.projects.Projects`
 - [ ] `confluence.spaces.Spaces`
