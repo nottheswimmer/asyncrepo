@@ -46,4 +46,4 @@ jobs:
            AWS_ACCESS_KEY_ID: ${{ secrets.TEST_AWS_ACCESS_KEY_ID }}
            AWS_SECRET_ACCESS_KEY: ${{ secrets.TEST_AWS_SECRET_ACCESS_KEY }}
       run: |
-        pytest
+        pytest -n auto
