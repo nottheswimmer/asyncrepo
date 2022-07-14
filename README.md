@@ -27,7 +27,7 @@ To provide tooling for developers of unified and federated search platforms.
 - `aws.s3_buckets.S3Buckets` - AWS S3 buckets belonging to the current user.
 - `aws.s3_objects.S3Objects` - AWS S3 objects belonging to a bucket.
 - `confluence.pages.Pages` - Confluence pages belonging to a given organization
-- `file.csv.Rows` - CSV rows within a given file specified by filepath or URL
+- `file.csv_rows.CSVRows` - CSV rows within a given file specified by filepath or URL
 - `github.repos.Repos` - GitHub repositories belonging to a given user or organization.
 - `greenhouse.jobs.Jobs` - Greenhouse jobs belonging to a given board.
 - `jira.issues.Issues` - JIRA issues belonging to a given organization.
@@ -47,7 +47,7 @@ To provide tooling for developers of unified and federated search platforms.
 | aws.s3_buckets.S3Buckets |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | [AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) |
 | aws.s3_objects.S3Objects |         Yes         |  Yes  |          Yes           | Yes             | [AWS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) |
 |  confluence.pages.Pages  |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
-|      file.csv.Rows       | [Naive](#naive-get) |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
+|  file.csv_rows.CSVRows   | [Naive](#naive-get) |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
 |    github.repos.Repos    |         Yes         |  Yes  |          Yes           | Yes             | Token                                                                                 |
 |   greenhouse.jobs.Jobs   |         Yes         |  Yes  | [Naive](#naive-search) | Yes             | None                                                                                  |
 |    jira.issues.Issues    |         Yes         |  Yes  |          Yes           | Yes             | Basic                                                                                 |
@@ -73,7 +73,7 @@ To provide tooling for developers of unified and federated search platforms.
     - † There is a simple retry system in place to address the aforementioned 500 error
       But it should be abstracted out into a more general retry system that can be applied
       to other repositories.
-- `file.csv.Rows`
+- `file.csv_rows.CSVRows`
   - † There is no options for caching the file. If a URL is used, that means every time the
     file is queried, it will be downloaded (e.g. every get, search, or list operation). In the
     future, it would be nice to be able to cache the file either in memory or on disk with some
