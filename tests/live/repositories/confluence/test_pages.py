@@ -15,7 +15,7 @@ load_dotenv()
 CONFLUENCE_USERNAME = os.environ['CONFLUENCE_USERNAME']
 CONFLUENCE_API_TOKEN = os.environ['CONFLUENCE_API_TOKEN']
 CONFLUENCE_BASE_URL = os.environ['CONFLUENCE_BASE_URL']
-CONFLUENCE_BASE_PATH = os.environ['CONFLUENCE_BASE_PATH']
+CONFLUENCE_BASE_PATH = os.environ.get('CONFLUENCE_BASE_PATH', '/wiki')
 
 tc = NamedTuple('TestContent', [('id', int), ('title', str), ('search_term', str)])
 KNOWN_PAGES = [
